@@ -31,8 +31,10 @@ jobs:
             - name: Unit Testing
               run: npm test
 
-            - uses: actions/upload-artifact@v4
+# to upload the the artifacts result 
+            - name: Test Result Artifacts
+              uses: actions/upload-artifact@v4
               with:
-                name: my-artifact
-                path: foobar.txt
+                name: Mocha-Test-Result
+                path: test-result.xml
                 compression-level: 9 # maximum compression
