@@ -18,20 +18,20 @@ jobs:
         strategy:
           matrix:
             nodejs_version: [18, 19, 20]
-            operating_system: [ubuntu-latest, macos-latest]
+            os: [ubuntu-latest, macos-latest]
             exclude:
               - nodejs_version: 18
-                operating_system: macos-latest
-        runs-on: ${{matrix.operating_system}}
+                os: macos-latest
+        runs-on: ${{matrix.os}}
 
         steps:
             - name: Checkout 
               uses: actions/checkout@v4
             
-            - name: Setup NodeJs Version - ${{ matrix.operating_system }}
+            - name: Setup NodeJs Version - ${{ matrix.os }}
               uses: actions/setup-node@v3
               with:
-                node-version: ${{matrix.operating_system}}
+                node-version: ${{matrix.os }}
 
             - name: Install Dependencies
               run: npm install
