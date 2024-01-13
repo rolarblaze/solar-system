@@ -87,7 +87,7 @@ jobs:
             with:
               dockerfile: Dockerfile
               context: . 
-              run: docker build -t solar-system-app:$GITHUB_SHA .
+              run: docker build --tag solar-system-app:$GITHUB_SHA .
               push: false
               
            
@@ -95,9 +95,9 @@ jobs:
             run: |
               docker run --name solar-system-app -d \
                 -p 3000:3000 \
-                -e MONGO_URI=$MONGO_URI \
-                -e MONGO_USERNAME=$MONGO_USERNAME \
-                -e MONGO_PASSWORD=$MONGO_PASSWORD \
+                vars MONGO_URI=$MONGO_URI \
+                vars MONGO_USERNAME=$MONGO_USERNAME \
+                vars MONGO_PASSWORD=$MONGO_PASSWORD \
                 ${{ env.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
 
           - name: Wait for Docker Container to Start
