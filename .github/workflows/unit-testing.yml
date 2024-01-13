@@ -1,0 +1,111 @@
+name: Solar System Workflow
+
+on:
+    workflow_dispatch:
+    push:
+        branches:
+            - main
+            - 'feature/*'
+env:
+    MONGO_URI: 'mongodb+srv://supercluster.d83jj.mongodb.net/superData'
+    MONGO_USERNAME: ${{ vars.MONGO_USERNAME }}
+    MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+    
+jobs:
+    unit-testing:
+        name: Unit-Test
+        # using the matrix strategy to test node Js on more operating system.
+        strategy:
+          matrix:
+            nodejs_version: [19, 20]
+            os: [ubuntu]
+            exclude:
+              - nodejs_version: 18
+                os: macos-latest
+        runs-on: ${{matrix.os}}
+
+        steps:
+            - name: Checkout 
+              uses: actions/checkout@v4
+            
+            - name: Setup NodeJs Version - ${{ matrix.os }}
+              uses: actions/setup-node@v3
+              with:
+                node-version: ${{matrix.os }}
+
+            - name: Install Dependencies
+              run: npm install
+
+            - name: Unit Testing
+              run: npm test
+
+# to upload the the artifacts result 
+            - name: Test Result Artifacts
+              uses: actions/upload-artifact@v3
+              with:
+                name: Mocha-Test-Result
+                path: test-results.xml
+
+    code-coverage:
+       name: Code-Coverage
+       runs-on: ubuntu-latest
+       steps:
+          - name: Checkout
+            uses: actions/checkout@v4
+            with:
+              nodejs_version: 18 
+          - name: Install Dependencies
+            run: npm install
+
+          - name: Check Code Coverage
+            run: npm run coverage 
+          - name: Test Result Artifacts
+            uses: actions/upload-artifact@v3
+            with:
+              name: Code-Coverage-Result
+              path: coverage
+              retention-days: 5
+            
+    login:
+        name: Docker Containerization
+        
+        runs-on: ubuntu-latest
+        steps:
+          -
+            name: Checkout 
+            uses: actions/checkout@v4
+
+          - name: Login to Docker Hub
+            uses: docker/login-action@v3
+            with:
+              username: ${{ vars.DOCKERHUB_USERNAME }}
+              password: ${{ secrets.DOCKERHUB_TOKEN }}
+          -
+            name: Build and Push
+            uses: docker/build-push-action@v5
+
+            with:
+              dockerfile: Dockerfile
+              context: . 
+              run: docker build --tag solar-system:$GITHUB_SHA .
+              push: false
+              
+           
+          - name: Run Docker Container
+            run: |
+              docker run --name solar-system -d \
+                -p 3000:3000 \
+                -e MONGO_URI=$MONGO_URI \
+                -e MONGO_USERNAME=$MONGO_USERNAME \
+                -e MONGO_PASSWORD=$MONGO_PASSWORD \
+                solar-system:$GITHUB_SHA
+    
+
+          - name: Wait for Docker Container to Start
+            run: sleep 10
+
+          - name: Test Docker Image
+            run: |
+              docker ps -a
+              wget -q -O - http://127.0.0.1:3000/live | grep live
+
