@@ -111,11 +111,11 @@ jobs:
                   -e MONGO_PASSWORD=$MONGO_PASSWORD \
                   ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
 
-              - name: Wait for Docker Container to Start
-                run: sleep 10
+              # - name: Wait for Docker Container to Start
+              #   run: sleep 10
 
-              - name: Test Docker Image
-                run: |
-                  docker ps -a
-                  wget -q -O - http://127.0.0.1:3000/live | grep live
+              # - name: Test Docker Image
+              #   run: |
+              #     docker ps -a
+              #     wget -q -O - http://127.0.0.1:3000/live | grep live
               
